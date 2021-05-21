@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+  <title>Transaction Form</title>
+</head>
+<body>
+  <style>
+    body{
+      background: #FFFFFF;
+    }
+    .header{
+      width: 100%;
+      position: fixed; 
+      height: 83px;
+      background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
+    }
+  </style>
+  <div class="header">
+    <h1 class="heading">Eggcoin</h1>
+  </div>
+  <div class="form" >
+<form action="../make_transaction" method="post"></form>
+    <input type="text" class="text" placeholder="Amount to be transferred" name="amount">
+    <input type="text" class="text" placeholder="receiver public key part 1" name="receiver_public_keyp1">
+    <input type="text" class="text" placeholder="receiver public key part 2" name="receiver_public_keyp2">
+    <input type="submit" class="submit" text="submit!">
+  </div>
+  </form>
+</body>
+</html>
