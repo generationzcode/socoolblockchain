@@ -507,9 +507,12 @@ class Blockchain():
 
   def ping_all_peers(self):
     for i in self.peers:
-      peers = json.loads(requests.post(i+"/new_peer",{"repl_name":self.personal_data["repl_name"],"username":self.personal_data["username"]}))
-      for v in peers:
-        self.write_new_peer(v)
+      try:
+        peers = json.loads(requests.post(i+"/new_peer",{"repl_name":self.personal_data["repl_name"],"username":self.personal_data["username"]}).text)
+        for v in peers:
+          self.write_new_peer(v)
+      except:
+        print("peer is offline")
 
       
 eggchain = Blockchain()

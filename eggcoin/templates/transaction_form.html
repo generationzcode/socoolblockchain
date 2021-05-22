@@ -8,26 +8,85 @@
 </head>
 <body>
   <style>
+    .form{
+      background: #F6E4E4;
+      border-radius: 2px;
+      padding:20px;
+      width:50%;
+      margin:auto;
+      margin-top:150px;
+      padding-top:50px;
+      padding-bottom:50px;
+    }
+    .real-form{
+      display:flex;
+      align-items:center;
+      flex-direction:column;
+    }
+    input{
+      display:flex;
+      margin:15px;
+      padding:5px;
+      flex-direction:column;
+    }
+    .text{
+      border:none;
+      width: 60%;
+  	  height: 40px;
+      padding:10px;
+background: #FFFAFA;
+border-radius: 5px;
+    }
+    *{
+      font-family:Roboto
+    }
     body{
       background: #FFFFFF;
     }
     .header{
+    top: 0;
+    left:0;
+    z-index: 100;
+    position: fixed;
       width: 100%;
-      position: fixed; 
-      height: 83px;
+      text-align:center;
+      height: 120px;
+      margin: 0px 0px 5px 0px;
       background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
+    }
+    .heading{
+      color: rgba(225, 225, 226, 1);
+      margin:30px;
+      font-size:3rem;
+    }
+    .pk{
+      margin-left:150px;
+    }
+    .amount{
+      margin-left:-20px;
+    }
+    .submit{
+      border:none;
+      height: 48px;
+      color:white;
+      text-align:center;
+      font-size:1.7rem;
+      padding:10px;
+      background: #D7AAAA;
+      border-radius: 5px;
     }
   </style>
   <div class="header">
     <h1 class="heading">Eggcoin</h1>
   </div>
   <div class="form" >
-<form action="../make_transaction" method="post"></form>
-    <input type="text" class="text" placeholder="Amount to be transferred" name="amount">
-    <input type="text" class="text" placeholder="receiver public key part 1" name="receiver_public_keyp1">
-    <input type="text" class="text" placeholder="receiver public key part 2" name="receiver_public_keyp2">
+<form action="../make_transaction" method="post" class="real-form">
+    {% csrf_token %}
+    <input type="text" class="text amount" placeholder="Amount to be transferred" name="amount">
+    <input type="text" class="text pk" placeholder="receiver public key part 1" name="receiver_public_keyp1">
+    <input type="text" class="text pk" placeholder="receiver public key part 2" name="receiver_public_keyp2">
     <input type="submit" class="submit" text="submit!">
   </div>
-  </form>
+</form>
 </body>
 </html>

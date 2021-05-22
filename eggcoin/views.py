@@ -24,17 +24,15 @@ def transaction_form(request):
 
 
 def make_transaction(request):
-  try:
-    amount = request.POST['amount']
-    reciever_public_keyp1 = request.POST['receiver_public_keyp1']
-    reciever_public_keyp2 = request.POST['receiver_public_keyp2']
-    transaction = eggchain.new_transaction(amount,[reciever_public_keyp1,reciever_public_keyp2])
-    if transaction:
-      return redirect(request,'index')
-    else:
-      return HttpResponse("your transaction is invalid, go back to the <a href='../'>home page</a>")
-  except:
-    return HttpResponse("something went wrong...")
+  amount = request.POST['amount']
+  reciever_public_keyp1 = request.POST['receiver_public_keyp1']
+  reciever_public_keyp2 = request.POST['receiver_public_keyp2']
+  transaction = eggchain.new_transaction(int(amount),[int(reciever_public_keyp1),int(reciever_public_keyp2)])
+  if transaction:
+    return redirect(request,'index')
+  else:
+    return HttpResponse("your transaction is invalid, go back to the <a href='../'>home page</a>")
+
 
 def new_peer(request):
   eggchain.write_new_peer(request.POST['repl_name']+"."+request.POST['username']+".repl.co")
