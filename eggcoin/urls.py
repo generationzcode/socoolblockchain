@@ -9,5 +9,6 @@ urlpatterns = [
     path('new_block',views.new_block,name="new_block"),
     path('blockchain',views.blockchain_response,name="blockchain"),path('mine',views.mine,name="mine"),
     path('make_transaction',views.make_transaction,name="make_transaction"),
-    path('transaction_form',views.transaction_form,name="transaction_form")
+    path('transaction_form',views.transaction_form,name="transaction_form"),
+    path('balance',views.balance,name="balance")
 ]

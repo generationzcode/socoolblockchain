@@ -16,7 +16,7 @@ syntax for post for making a new transaction -
 """
 
 def index(request):
-  return HttpResponse("hey there")
+  return render(request,'index.html')
 
 
 def transaction_form(request):
@@ -29,21 +29,21 @@ def make_transaction(request):
   reciever_public_keyp2 = request.POST['receiver_public_keyp2']
   transaction = eggchain.new_transaction(int(amount),[int(reciever_public_keyp1),int(reciever_public_keyp2)])
   if transaction:
-    return redirect(request,'index')
+    return redirect('index')
   else:
     return HttpResponse("your transaction is invalid, go back to the <a href='../'>home page</a>")
 
 
 def new_peer(request):
-  eggchain.write_new_peer(request.POST['repl_name']+"."+request.POST['username']+".repl.co")
+  eggchain.write_new_peer("http://"+request.POST['repl_name']+"."+request.POST['username']+".repl.co")
   json_data = ""
   with open("peers.json","r") as outfile:
-    json_data=outfile
+    json_data=outfile.read()
   return HttpResponse(json_data)
 
 
 def new_transaction(request):
-  transaction_recieved = eggchain.recieved_transaction(request.POST["transaction"])
+  transaction_recieved = eggchain.add_recieved_transaction(json.loads(request.POST["transaction"]))
   response = ""
   if transaction_recieved == True:
     response="true"
@@ -53,10 +53,13 @@ def new_transaction(request):
 
 
 def new_block(request):
-  block = eggchain.check_single_block(request.POST['block'])
+  block = eggchain.new_block_recieved(json.loads(request.POST['prevblock'])['nonce'],json.loads(request.POST['prevblock'])['transactions'],json.loads(request.POST['block'])['timestamp'],json.loads(request.POST['block'])['transactions'])
   if block == True:
+    print("yes")
+    eggchain.log_all_blockchain_transactions(eggchain.chain[:-2])
     return HttpResponse("true")
   else:
+    print("no")
     return HttpResponse("false")
 
 
@@ -67,6 +70,11 @@ def blockchain_response(request):
 
 def mine(request):
   eggchain.mine()
-  return HttpResponse("mining")
+  return redirect('index')
 
+
+def balance(request):
+  eggchain.read_owned_coins()
+  print(len(eggchain.coins))
+  return render(request,'coin_count.html',{'count':len(eggchain.balance_everything(eggchain.chain)[0])})
 #copyright generationxcode & graphegg 2021
