@@ -77,4 +77,8 @@ def balance(request):
   eggchain.read_owned_coins()
   print(len(eggchain.coins))
   return render(request,'coin_count.html',{'count':len(eggchain.balance_everything(eggchain.chain)[0])})
+
+
+def public_key(request):
+  return HttpResponse("part 1 :<br>"+str(eggchain.jsonify_public_key(eggchain.public_key)[0])+"<br><br><br>"+"part 2 :<br>"+str(eggchain.jsonify_public_key(eggchain.public_key)[1]))
 #copyright generationxcode & graphegg 2021

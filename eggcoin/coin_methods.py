@@ -12,7 +12,7 @@ import hashlib
 import json
 class Blockchain():
   def __init__(self):
-    self.difficulty = 2
+    self.difficulty = 7
     self.read_personal_data()
     self.current_transactions = []
     self.nonce=0
@@ -56,7 +56,6 @@ class Blockchain():
     self.write_owned_coins()
     self.write_unspent_coins()
     self.blockchain_checking()
-    self.difficulty = 2
   
   def mine(self):
     if self.chain[-1]["nonce"] == None:

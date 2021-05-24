@@ -1,43 +1,11 @@
-# Developing Django on Repl.it
+# IMPORTANT
+## When first using this software you MUST:
+* delete `blockchain.json` in the root directory
+* go to `personal_data.json` and change details accordingly
+* run program once, after the terminal says `Quit server with CONTROL C`, click on the stop button and run once again.
+* if you dont do the above steps, your peer will not be added to the network and your coins won't be recognised by everyone.
 
-- Fork this template to get started
-- Simply hit run to start the server
-- The server will autoreload as needed. You don't need to restart the server manually.
-
-## Add your first view
-
-1. Create a file under `mysite` named `views.py` with the following contents:
-
-```
-from django.http import HttpResponse
-
-
-def index(request):
-    return HttpResponse("Hello, world.")
-```
-
-2. Add a url pattern under `mysite/urls.py`. It should look like this:
-
-```
-from django.contrib import admin
-from django.urls import path
-from . import views
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
-]
-```
-
-## Shell
-
-Django utilizes the shell for managing your site. For this click on the `?` in the lower-right corner and click "Workspace shortcuts" from there you can open a new shell pane. 
-
-## Database
-
-By default this template utilizes the sqlite database engine. While this is fine for development it won't work with external users of your app as we don't persist changes to files when they happen outside the development environment. 
-
-We suggest bringing a database using an outside service. 
-
-See Django documentation on how to setup a database: https://docs.djangoproject.com/en/3.0/intro/tutorial02/
-
+# What is eggcoin?
+* eggcoin is a cryptocurrency developed first by graphegg/generationxcode. He/She loves it. He/She loves eggs. Please dont use this for bad stuff, he/she will be very sad. This was a first time build so there can be many bugs and issues, please correct them ,this was built for small scale use in version 1. Updates coming up include an upgrade of peer to peer communication rules, better checking of incoming blockchains, and visualizations of blockchains and peer to peer network along with a user being able to see each owned coin that they have and look at each history.
+# transactions
+* transactions include public key and amount. amount is the whole number of coins to be exchanged and public key consists of 2 parts, the large part and the small part. Keys.json has them. Once the person u are sending the coins to tells you their public key, you can go to the transaction form and send them any amount of coins
