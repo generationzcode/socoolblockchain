@@ -12,7 +12,7 @@ import hashlib
 import json
 class Blockchain():
   def __init__(self):
-    self.difficulty = 7
+    self.difficulty = 5
     self.read_personal_data()
     self.current_transactions = []
     self.nonce=0
