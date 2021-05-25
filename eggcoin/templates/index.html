@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
-  <title>Transaction Form</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+  <title>Eggcoin</title>
 </head>
 <body>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     .count{
       background: yellow;
       border-radius: 100%;
@@ -20,50 +26,30 @@
       font-size:4rem;;
       text-align:center;
     }
-    .real-form{
-      display:flex;
-      align-items:center;
-      flex-direction:column;
-    }
-    input{
-      display:flex;
-      margin:15px;
-      padding:5px;
-      flex-direction:column;
-    }
-    .text{
-      border:none;
-      width: 60%;
-  	  height: 40px;
-      padding:10px;
-background: #FFFAFA;
-border-radius: 5px;
-    }
     .links{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
       background: #F6E4E4;
-      border-radius: 2px;
+      display:flex;
+      align-items:center;
+      flex-direction:column;
+      border-radius: 10px;
       padding:20px;
       width:50%;
+      text-align: center;
       margin:auto;
       margin-top:15em;
+      margin-bottom: 100px;
       padding-top:50px;
       padding-bottom:50px;
     }
-    *{
-      font-family:Roboto
-    }
     body{
       background: #FFFFFF;
+      font-family: 'Roboto', sans-serif;
     }
     .header{
     top: 0;
     left:0;
     z-index: 100;
     display:flex;
-    flex-direction:column;
     position: fixed;
       width: 100%;
       text-align:center;
@@ -72,49 +58,45 @@ border-radius: 5px;
       background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
     }
     .heading{
-      color: rgba(225, 225, 226, 1);
-      margin:10px;
+      color: #fff;
+      margin:auto;
       font-size:3rem;
-    }
-    .subheading{
-      color: rgba(225, 225, 226, 1);
-      margin:10px;
-      font-size:2rem;
-    }
-    .pk{
-      margin-left:150px;
-    }
-    .amount{
-      margin-left:-20px;
-    }
-    .submit{
-      border:none;
-      height: 48px;
-      color:white;
-      text-align:center;
-      font-size:1.7rem;
-      padding:10px;
-      background: #D7AAAA;
-      border-radius: 5px;
     }
     .link{
       padding:30px;
-      background:linear-gradient(90.56deg, #009FB5 -1.04%, #3CDF7D 99.51%);
-      margin:5px;
+      width: 100%;
+      background: #D7AAAA;
+      margin: auto;
       border-radius:10px;
     }
-    a{
+    a {
+      position: relative;
+      display: block;
+      min-width: 50%;
+      left: 0; right: 0;
+      margin: 10px;
       text-decoration:none;
+      text-align: center;
+      color: #0f0f0f;
+      font-size: 150%;
     }
   </style>
   <div class="header">
     <h1 class="heading" >Eggcoin</h1>
   </div>
   <div class="links">
-    <div class="link mine"><a href='./mine'>Mine a block</a></div>
-    <div class="link transaction"><a href="./transaction_form">Make a transaction</a></div>
-    <div class="link balance"><a href="./balance">View your balance</a></div>
-    <div class="link key"><a href="./public_key">View your public key</a></div>
+    <a href='./mine'>
+      <div class="link mine">Mine a block</div>
+    </a>
+    <a href="./transaction_form">
+      <div class="link transaction">Make a transaction</div>
+    </a>
+    <a href="./balance">
+      <div class="link balance">View your balance</div>
+    </a>
+    <a href="./public_key">
+      <div class="link key">View your public key</div>
+    </a>
   </div>
 </body>
 </html>

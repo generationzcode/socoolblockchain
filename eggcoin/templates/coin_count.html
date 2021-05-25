@@ -3,86 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
-  <title>Transaction Form</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+  <title>Balance</title>
 </head>
 <body>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     .count{
+      position: relative;
       background: yellow;
+      text-align: center;
       border-radius: 100%;
-      padding:70px;
       margin:auto;
-      width:50px;
-      margin-top:5em;
-      padding-top:50px;
-      padding-bottom:50px;
-      font-size:4rem;;
-      text-align:center;
+      width: 300px;
+      height: 300px;
+      margin-top:4em;
+      font-size:4rem;
+      box-shadow: 0 0 50px -10px;
     }
-    .real-form{
-      display:flex;
-      align-items:center;
-      flex-direction:column;
-    }
-    input{
-      display:flex;
-      margin:15px;
-      padding:5px;
-      flex-direction:column;
-    }
-    .text{
-      border:none;
-      width: 60%;
-  	  height: 40px;
-      padding:10px;
-background: #FFFAFA;
-border-radius: 5px;
-    }
-    *{
-      font-family:Roboto
+    .count span {
+      line-height: 300px; /* must be height of .count */
+      margin: auto;
     }
     body{
       background: #FFFFFF;
+      font-family: 'Roboto', sans-serif;
     }
     .header{
     top: 0;
     left:0;
     z-index: 100;
-    display:flex;
-    flex-direction:column;
+    display: flex;
+    flex-direction: column;
     position: fixed;
       width: 100%;
       text-align:center;
       padding:40px;
       margin: 0px 0px 5px 0px;
       background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
+      color: #fff;
     }
     .heading{
-      color: rgba(225, 225, 226, 1);
-      margin:10px;
+      margin:auto;
       font-size:3rem;
     }
     .subheading{
-      color: rgba(225, 225, 226, 1);
-      margin:10px;
+      margin:auto;
       font-size:2rem;
-    }
-    .pk{
-      margin-left:150px;
-    }
-    .amount{
-      margin-left:-20px;
-    }
-    .submit{
-      border:none;
-      height: 48px;
-      color:white;
-      text-align:center;
-      font-size:1.7rem;
-      padding:10px;
-      background: #D7AAAA;
-      border-radius: 5px;
     }
   </style>
   <div class="header">
@@ -90,7 +62,7 @@ border-radius: 5px;
     <h1 class="subheading">Your Balance</h1>
   </div>
   <div class="count">
-    {{ count }}
+    <span>5000</span>
   </div>
 </body>
 </html>
