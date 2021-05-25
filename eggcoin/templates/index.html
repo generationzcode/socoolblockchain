@@ -1,102 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
-  <title>Eggcoin</title>
-</head>
-<body>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    .count{
-      background: yellow;
-      border-radius: 100%;
-      padding:70px;
-      margin:auto;
-      width:50px;
-      margin-top:5em;
-      padding-top:50px;
-      padding-bottom:50px;
-      font-size:4rem;;
-      text-align:center;
-    }
-    .links{
-      background: #F6E4E4;
-      display:flex;
-      align-items:center;
-      flex-direction:column;
-      border-radius: 10px;
-      padding:20px;
-      width:50%;
-      text-align: center;
-      margin:auto;
-      margin-top:15em;
-      margin-bottom: 100px;
-      padding-top:50px;
-      padding-bottom:50px;
-    }
-    body{
-      background: #FFFFFF;
-      font-family: 'Roboto', sans-serif;
-    }
-    .header{
-    top: 0;
-    left:0;
-    z-index: 100;
-    display:flex;
-    position: fixed;
-      width: 100%;
-      text-align:center;
-      padding:40px;
-      margin: 0px 0px 5px 0px;
-      background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
-    }
-    .heading{
-      color: #fff;
-      margin:auto;
-      font-size:3rem;
-    }
-    .link{
-      padding:30px;
-      width: 100%;
-      background: #D7AAAA;
-      margin: auto;
-      border-radius:10px;
-    }
-    a {
-      position: relative;
-      display: block;
-      min-width: 50%;
-      left: 0; right: 0;
-      margin: 10px;
-      text-decoration:none;
-      text-align: center;
-      color: #0f0f0f;
-      font-size: 150%;
-    }
-  </style>
-  <div class="header">
-    <h1 class="heading" >Eggcoin</h1>
-  </div>
-  <div class="links">
-    <a href='./mine'>
-      <div class="link mine">Mine a block</div>
-    </a>
-    <a href="./transaction_form">
-      <div class="link transaction">Make a transaction</div>
-    </a>
-    <a href="./balance">
-      <div class="link balance">View your balance</div>
-    </a>
-    <a href="./public_key">
-      <div class="link key">View your public key</div>
-    </a>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eggcoin</title>
+  </head>
+  <body>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Odibee+Sans&display=swap');
+      html,body,button {
+        overflow:hidden;
+        font-family: 'Odibee Sans'
+      }
+      img {
+        position:absolute;
+        display:block;
+        margin: 0 auto;
+        height:101vh;
+        width:101vw;
+        margin-left:-1vw;
+        margin-top:-2vh;
+        filter:blur(8px);
+      }
+      svg {
+        display:block;
+        margin:auto;
+      }
+      h1#title {
+        font-size:99px;
+      }
+      #container {
+        transform:translate(-50%,-40%);
+      }
+      #container, #container2 {
+        position:absolute;
+        top:50%;
+        left:50%;
+        color:white;
+        text-align:center;
+      }
+      #container2 {
+        transform:translate(-50%,-55%);
+      }
+      #arrow {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-top: 4px solid #1e90ff;
+        border-right: 4px solid #1e90ff;
+        transform: rotate(45deg);
+        transition:1s;
+      }
+      #arrow:hover {
+        transform:rotate(-135deg);
+        border-top: 4px solid yellow;
+        border-right: 4px solid yellow;
+        width:40px;
+        height:40px;
+      }
+      h1#dashboardtitle {
+        color:white;
+        font-size:99px;
+      }
+      div#actions {
+        width:90vw;
+        height:66vh;
+        background:rgba(0,0,0,0.4);
+        display:flex;
+      }
+      button {
+        background-color:dodgerblue;
+        color:white;
+        border:none;
+        font-size:40px;
+        width:25%;
+        transition:1s;
+      }
+      button:hover {
+        background-color:blue;
+      }
+    </style>
+    <img src = "https://tse4.mm.bing.net/th?id=OIP.nlzQLwU4IncaGdFfjHBbogHaEB"/>
+    <div id = "container">
+    <h1 id = "title">EGGCOIN</h1>
+    <h2>Learn how crypto works, interactively</h3>
+    <br>
+    <br>
+    <br>
+    <span id = "arrow"></span>
+    </div>
+    <div id = "container2">
+    <h1 id = "dashboardtitle">Dashboard</h1>
+    <div id = "actions">
+      <button data-url = "/public_key"> View your public key </button>
+      <button data-url = "/balance"> View your balance </button>
+      <button data-url = "/transaction_form"> Make a transaction </button>
+      <button data-url = "/mine"> Mine a block </button>
+    </div>
+    </div>
+    <script>
+    const $ = document.querySelector.bind(document);
+    const startup = $("#container").style;
+    const assets = $("#container2").style
+    const arrow = $("#arrow");
+    assets.opacity = "0";
+    assets.display = "none";
+    arrow.addEventListener("click", () => {
+      let opacity = 1;
+      let decrease = true;
+      const transition = () => {
+        if (opacity > 0 && decrease) {
+          opacity -= 0.1;
+          startup.opacity = opacity.toString();
+          window.requestAnimationFrame(transition);
+        } else if (opacity < 1) {
+          decrease = false;
+          if (opacity > 0.1) assets.display = "block";
+          opacity += 0.1;
+          assets.opacity = opacity.toString();
+          window.requestAnimationFrame(transition);
+        }
+      }
+      window.requestAnimationFrame(transition);
+    })
+    document.querySelectorAll("button").forEach(e => {
+      e.addEventListener("click", () => {
+        location.href = e.dataset.url
+      })
+    })
+    </script>
+  </body>
 </html>
