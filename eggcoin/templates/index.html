@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
   <title>Eggcoin</title>
 </head>
 <body>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     .count{
       background: yellow;
       border-radius: 100%;
@@ -20,14 +26,6 @@
       font-size:4rem;;
       text-align:center;
     }
-    .text{
-      border:none;
-      width: 60%;
-  	  height: 40px;
-      padding:10px;
-background: #FFFAFA;
-border-radius: 5px;
-    }
     .links{
       background: #F6E4E4;
       display:flex;
@@ -36,6 +34,7 @@ border-radius: 5px;
       border-radius: 10px;
       padding:20px;
       width:50%;
+      text-align: center;
       margin:auto;
       margin-top:15em;
       margin-bottom: 100px;
@@ -60,25 +59,35 @@ border-radius: 5px;
     }
     .heading{
       color: #fff;
-      margin:10px;
+      margin:auto;
       font-size:3rem;
     }
     .link{
       padding:30px;
-      min-width: 50%;
+      width: 100%;
       background: #D7AAAA;
-      margin:5px;
+      margin: auto;
       border-radius:10px;
     }
-    a{
+    a {
+      position: relative;
+      display: block;
+      min-width: 50%;
+      left: 0; right: 0;
+      margin: 10px;
       text-decoration:none;
+      text-align: center;
+      color: #0f0f0f;
+      font-size: 150%;
     }
   </style>
   <div class="header">
     <h1 class="heading" >Eggcoin</h1>
   </div>
   <div class="links">
-    <div class="link mine"><a href='./mine'>Mine a block</a></div>
+    <a href='./mine'>
+      <div class="link mine">Mine a block</div>
+    </a>
     <a href="./transaction_form">
       <div class="link transaction">Make a transaction</div>
     </a>
