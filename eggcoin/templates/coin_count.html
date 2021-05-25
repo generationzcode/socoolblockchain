@@ -3,20 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
   <title>Balance</title>
 </head>
 <body>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     .count{
+      position: relative;
       background: yellow;
       text-align: center;
       border-radius: 100%;
-      padding:50px;
       margin:auto;
-      width:50px;
-      margin-top:5em;
+      width: 300px;
+      height: 300px;
+      margin-top:4em;
       font-size:4rem;
+      box-shadow: 0 0 50px -10px;
+    }
+    .count span {
+      line-height: 300px; /* must be height of .count */
+      margin: auto;
     }
     body{
       background: #FFFFFF;
@@ -26,8 +38,8 @@
     top: 0;
     left:0;
     z-index: 100;
-    display:flex;
-    flex-direction:column;
+    display: flex;
+    flex-direction: column;
     position: fixed;
       width: 100%;
       text-align:center;
@@ -50,7 +62,7 @@
     <h1 class="subheading">Your Balance</h1>
   </div>
   <div class="count">
-    {{ count }}
+    <span>5000</span>
   </div>
 </body>
 </html>
