@@ -8,6 +8,9 @@
 </head>
 <body>
   <style>
+    body, input {
+      font-family: 'Roboto', sans-serif;
+    }
     .form{
       background: #F6E4E4;
       border-radius: 2px;
@@ -22,12 +25,11 @@
       display:flex;
       align-items:center;
       flex-direction:column;
+      border-radius: 10px;
     }
     input{
-      display:flex;
       margin:15px;
       padding:5px;
-      flex-direction:column;
     }
     .text{
       border:none;
@@ -36,9 +38,6 @@
       padding:10px;
 background: #FFFAFA;
 border-radius: 5px;
-    }
-    *{
-      font-family:Roboto
     }
     body{
       background: #FFFFFF;
@@ -55,7 +54,7 @@ border-radius: 5px;
       background: linear-gradient(90deg, #FAABAB 0%, #EFC7E6 100%);
     }
     .heading{
-      color: rgba(225, 225, 226, 1);
+      color: #eee;
       margin:30px;
       font-size:3rem;
     }
@@ -74,6 +73,7 @@ border-radius: 5px;
       padding:10px;
       background: #D7AAAA;
       border-radius: 5px;
+      cursor: pointer;
     }
   </style>
   <div class="header">
