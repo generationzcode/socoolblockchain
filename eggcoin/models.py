@@ -1,5 +1,4 @@
 from django.db import models
-
 # Create your models here.
 class Block_chain(models.Model):
   timestamp = models.CharField(max_length=100)
