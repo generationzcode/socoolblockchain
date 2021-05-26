@@ -10,8 +10,11 @@ from rsa import PublicKey, PrivateKey
 import random
 import hashlib
 import json
+from .models import *
 class Blockchain():
   def __init__(self):
+    self.escape = False
+    self.mine_stat =False
     self.difficulty = 5
     self.read_personal_data()
     self.current_transactions = []
@@ -22,7 +25,7 @@ class Blockchain():
       self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
       self.coins = self.read_owned_coins()
       self.chain = self.read_blockchain()
-      self.current_transactions = self.chain[-1]["transactions"]
+      self.current_transactions = ["transactions"]
       self.unspent_coins = self.read_unspent_coins()
       self.read_personal_data
     except:
@@ -56,23 +59,29 @@ class Blockchain():
     self.write_owned_coins()
     self.write_unspent_coins()
     self.blockchain_checking()
-  
   def mine(self):
     if self.chain[-1]["nonce"] == None:
       mined = False
       prev_hash = self.chain[-1]["prev_hash"]
       counter = random.randint(1,1*10^5)
       while mined == False:
-        hash_made = self.hash_txt(prev_hash+str(counter))
-        if hash_made[:self.difficulty] == self.generate_zero_string(self.difficulty):
-          self.chain[-1]["nonce"] = counter
-          self.new_block_mined()
-          print("nonce found! mining successful!")
-          return True
-        counter +=1
-        self.nonce=counter
-        print("mine with nonce "+str(counter)+" unsuccessful")
+        self.mine_stat =True
+        if self.escape == False:
+          hash_made = self.hash_txt(prev_hash+str(counter))
+          if hash_made[:self.difficulty] == self.generate_zero_string(self.difficulty):
+            self.chain[-1]["nonce"] = counter
+            self.new_block_mined()
+            print("nonce found! mining successful!")
+            return True
+          counter +=1
+          self.nonce=counter
+          print("mine with nonce "+str(counter)+" unsuccessful")
+        else:
+          self.mine_stat=False
+          self.escape = True
+          break
     else:
+      self.mine_stat =False
       self.nonce=0
       self.new_block_mined()
     
@@ -93,20 +102,25 @@ class Blockchain():
         self.first_transaction_in_block()
         #logic here for broadcasting the block around the network
         if not(self.broadcast_block_mined(self.chain[-1])):
-          self.current_transactions=[]
-          self.chain.pop(-1)
-          self.chain[-1]["nonce"]=None
-          self.unspent_coins=[]
-          self.coins=[]
-          self.log_all_blockchain_transactions(self.chain)
-          self.write_blockchain()
-          self.write_owned_coins()
-          self.write_unspent_coins()
-          return False
+          try:
+            self.current_transactions=[]
+            self.chain.pop(-1)
+            self.chain[-1]["nonce"]=None
+            self.unspent_coins=[]
+            self.coins=[]
+            self.log_all_blockchain_transactions(self.chain)
+            self.write_blockchain()
+            self.write_owned_coins()
+            self.write_unspent_coins()
+            self.mine_stat = False
+            return False
+          except:
+            pass
         else:
           self.write_blockchain()
           self.write_owned_coins()
           self.write_unspent_coins()
+          self.mine_stat = False
           return True
       else:
         self.unspent_coins=[]
@@ -134,6 +148,7 @@ class Blockchain():
       self.write_blockchain()
       self.write_owned_coins()
       self.write_unspent_coins()
+      self.mine_stat = False
     else:
       return False
     return True
@@ -376,7 +391,10 @@ class Blockchain():
         if i == v:
           to_remove.append(j)
     for i in to_remove:
-      self.unspent_coins.pop(i)
+      try:
+        self.unspent_coins.pop(i)
+      except:
+        pass
     for i in recieved:
       self.unspent_coins.append(i)
     pub_key = self.jsonify_public_key(self.public_key)
@@ -523,6 +541,11 @@ class Blockchain():
         self.chain=chains_obj[index]['chain']
         self.write_blockchain()
         chains_obj={}
+        out = self.balance_everything(self.chain)
+        self.unspent_coins = out[1]
+        self.coins = out[0]
+        self.write_owned_coins()
+        self.write_unspent_coins()
     except:
       print("die")
 
@@ -534,6 +557,9 @@ class Blockchain():
           for v in peers:
             self.write_new_peer(v)
       except:
+        self.peers.remove(i)
+        with open("peers.json", "w") as outfile:
+          json.dump(self.peers, outfile)
         print("lol2")
 
   def balance_everything(self,chain):
