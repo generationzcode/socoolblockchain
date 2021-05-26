@@ -88,9 +88,7 @@ def mine(request):
 
 
 def balance(request):
-  eggchain.read_owned_coins()
-  print(len(eggchain.coins))
-  return render(request,'coin_count.html',{'count':len(eggchain.balance_everything(eggchain.chain)[0])})
+  return render(request,'coin_count.html',{'count':owned_coins.objects.all().count()})
 
 
 def public_key(request):
@@ -105,3 +103,7 @@ def get_block(request):
     return json.dumps({"index":block.id,"prev_hash":block.prev_hash,"nonce":int(block.nonce),"time_stamp":int(block.timestamp),"transactions":json.loads(block.transactions)})
   except:
     return HttpResponse("false")
+
+
+def chain_length(request):
+  return HttpResponse(Block_chain.objects.all().count())

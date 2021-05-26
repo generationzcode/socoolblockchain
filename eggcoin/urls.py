@@ -11,5 +11,7 @@ urlpatterns = [
     path('make_transaction',views.make_transaction,name="make_transaction"),
     path('transaction_form',views.transaction_form,name="transaction_form"),
     path('balance',views.balance,name="balance"),
-    path('public_key',views.public_key,name="public_key")
+    path('public_key',views.public_key,name="public_key"),
+    path('chain_length',views.chain_length,name="chain_length"),
+    path('block_num',views.get_block,name="block_num")
 ]

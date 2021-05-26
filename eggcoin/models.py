@@ -1,6 +1,7 @@
 from django.db import models
 # Create your models here.
 class Block_chain(models.Model):
+  index = models.CharField(max_length=1000000)
   timestamp = models.CharField(max_length=100)
   previous_hash = models.CharField(max_length=60)
   nonce = models.TextField()
