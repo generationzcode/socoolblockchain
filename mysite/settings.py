@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 INSTALLED_APPS = [
-    'eggcoin.apps.EggcoinConfig'
+    'eggcoin.apps.EggcoinConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

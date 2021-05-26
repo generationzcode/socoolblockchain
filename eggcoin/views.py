@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from.coin_methods import *
 from django.shortcuts import  render,redirect
+from.coin_methods import *
 from .models import *
 
 """
