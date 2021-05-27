@@ -73,6 +73,7 @@ def new_block(request):
     if block == True:
       print("yes")
       eggchain.escape =True
+      eggchain.blockchain_checking()
       return HttpResponse("true")
     else:
       print("no")
@@ -86,6 +87,7 @@ def blockchain_response(request):
 
 
 def mine(request):
+  eggchain.blockchain_checking()
   if eggchain.mine_stat == False:
     eggchain.mine()
   return redirect('index')
@@ -104,7 +106,7 @@ def get_block(request):
   try:
     number = int(request.POST['index'])
     block = Block_chain.objects.get(index=str(number))
-    return HttpResponse(json.dumps({"index":block.id,"prev_hash":block.prev_hash,"nonce":int(block.nonce),"time_stamp":int(block.timestamp),"transactions":json.loads(block.transactions)}))
+    return HttpResponse(json.dumps({"index":block.index,"prev_hash":block.prev_hash,"nonce":int(block.nonce),"time_stamp":int(block.timestamp),"transactions":json.loads(block.transactions)}))
   except:
     return HttpResponse("false")
 

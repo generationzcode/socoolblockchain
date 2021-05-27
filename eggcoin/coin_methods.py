@@ -4,6 +4,7 @@
 #day 4 i have to test it again... want to be 100% sure before moving to the next phase
 # after many days of exams, I'm bacc. lets call this day 5. Added method for adding a recieved transaction
 import requests
+import traceback
 import time
 import rsa
 from rsa import PublicKey, PrivateKey
@@ -33,6 +34,7 @@ class Blockchain():
       self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
       self.current_transactions = self.read_from_blockchain_latest()["transactions"]
       self.unspent_coins = self.read_unspent_coins()
+      self.blockchain_checking()
     else:
       self.chain = []
       print("hey")
@@ -263,7 +265,6 @@ class Blockchain():
           "hash":self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i),str(self.public_key)])),
           "signature":"egg"#rsa.encrypt(self.hash_txt(str(len(self.chain)+1)).encode('utf8'), self.private_key)
         })
-      self.broadcast_transaction({"inputs":inputs,"outputs":outputs})
       return [{"inputs":inputs,"outputs":outputs}]
 
       """
@@ -301,15 +302,20 @@ class Blockchain():
     for i in self.peers:
       if not(i == "http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co"):
         try:
-          response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(self.chain[-2])}).text
+          prev_block = self.read_from_blockchain_latest()
+          response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(prev_block)}).text
+          print(response+" "+i)
           if response == "true":
             true_tally+=1
           elif response=="false":
             false_tally+=1
         except:
+          traceback.print_exc()
           print("peer "+i+" is offline or has an incorrect address")
     #play function. a dummy function until i set up the API
     print("Block broadcasted. Lets hope it gets accepted!")
+    print(true_tally)
+    print(false_tally)
     if (true_tally+false_tally) == 0:
       print("true")
       return True
@@ -523,10 +529,12 @@ class Blockchain():
               print("(die lol)The address "+i+" is wrong or offline. It has been removed from peers.")
       if highest == int(self.read_from_blockchain_latest()['index']):
         return True
+      print(highest)
+      print(self.read_from_blockchain_latest()['index'])
       if peer !=  None:
-        last_block_own = self.read_from_blockchain(int(self.read_from_blockchain_latest()['index'])-1)
-        block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
         try:
+          last_block_own = self.read_from_blockchain(int(self.read_from_blockchain_latest()['index'])-1)
+          block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
           if int(last_block_own['nonce']) == block['nonce']:
             for i in range(int(last_block_own['index'])+2,highest+1):
               self.synchronizing = True
