@@ -55,30 +55,34 @@ def new_peer(request):
 
 
 def new_transaction(request):
-  transaction_recieved = eggchain.add_recieved_transaction(json.loads(request.POST["transaction"]))
-  response = ""
-  if transaction_recieved == True:
-    response="true"
+  if eggchain.synchronizing == False:
+    transaction_recieved = eggchain.add_recieved_transaction(json.loads(request.POST["transaction"]))
+    response = ""
+    if transaction_recieved == True:
+      response="true"
+    else:
+      response="false"
+    return HttpResponse(response)
   else:
-    response="false"
-  return HttpResponse(response)
+    return HttpResponse("nope")
 
 
 def new_block(request):
-  block = eggchain.new_block_recieved(json.loads(request.POST['prevblock'])['nonce'],json.loads(request.POST['prevblock'])['transactions'],json.loads(request.POST['block'])['timestamp'],json.loads(request.POST['block'])['transactions'])
-  if block == True:
-    print("yes")
-    eggchain.escape =True
-    eggchain.log_all_blockchain_transactions(eggchain.chain[:-2])
-    return HttpResponse("true")
+  if eggchain.synchronizing == False:
+    block = eggchain.new_block_recieved(json.loads(request.POST['prevblock'])['nonce'],json.loads(request.POST['prevblock'])['transactions'],json.loads(request.POST['block'])['timestamp'],json.loads(request.POST['block'])['transactions'])
+    if block == True:
+      print("yes")
+      eggchain.escape =True
+      return HttpResponse("true")
+    else:
+      print("no")
+      return HttpResponse("false")
   else:
-    print("no")
-    return HttpResponse("false")
+    HttpResponse("shut yo mouth")
 
 
 def blockchain_response(request):
-  chain = eggchain.chain
-  return HttpResponse(json.dumps(chain))
+  return HttpResponse('I will not give you this.')
 
 
 def mine(request):
@@ -99,11 +103,17 @@ def public_key(request):
 def get_block(request):
   try:
     number = int(request.POST['index'])
-    block = Block_chain.objects.get(pk=number)
-    return json.dumps({"index":block.id,"prev_hash":block.prev_hash,"nonce":int(block.nonce),"time_stamp":int(block.timestamp),"transactions":json.loads(block.transactions)})
+    block = Block_chain.objects.get(index=str(number))
+    return HttpResponse(json.dumps({"index":block.id,"prev_hash":block.prev_hash,"nonce":int(block.nonce),"time_stamp":int(block.timestamp),"transactions":json.loads(block.transactions)}))
   except:
     return HttpResponse("false")
 
 
 def chain_length(request):
   return HttpResponse(Block_chain.objects.all().count())
+
+
+def reset_minestat(request):
+  eggchain.mine_stat=False
+  eggchain.escape=False
+  return HttpResponse('reset')
