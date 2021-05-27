@@ -3,7 +3,7 @@ from django.db import models
 class Block_chain(models.Model):
   index = models.CharField(max_length=1000000)
   timestamp = models.CharField(max_length=100)
-  previous_hash = models.CharField(max_length=60)
+  previous_hash = models.CharField(max_length=200)
   nonce = models.TextField()
   transactions = models.TextField()
   pub_date = models.DateTimeField('date published')

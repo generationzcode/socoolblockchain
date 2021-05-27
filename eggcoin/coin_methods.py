@@ -4,6 +4,7 @@
 #day 4 i have to test it again... want to be 100% sure before moving to the next phase
 # after many days of exams, I'm bacc. lets call this day 5. Added method for adding a recieved transaction
 import requests
+import traceback
 import time
 import rsa
 from rsa import PublicKey, PrivateKey
@@ -13,19 +14,27 @@ import json
 from .models import *
 from django.utils import timezone
 class Blockchain():
+
   def __init__(self):
+    self.synchronizing = False
+    self.write_new_peer("http://Eggcoin.generationxcode.repl.co")
     self.escape = False
-    self.mine_stat =False
-    self.difficulty = 5
+    self.mine_stat = False
+    self.difficulty = 4
     self.read_personal_data()
     self.current_transactions = []
     self.nonce=0
-    if (Block_chain.objects.all().count()>0):
+    my_key = 140388580907465133105915434450383793485035986871045024199643410432339156186579924298083425595522266259072335465721683558239322246445355757776569418174479148327499466879142197016031265888167897049284395859778857155905614260161061241649905878412678823961156997654382749170224692738793588409591092859914764702383
+    keys = self.read_keys()
+    self.public_key = PublicKey(keys["public_key"][0],keys["public_key"][1])
+    self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
+    if (Block_chain.objects.all().count()>0) or ((int(keys['public_key'][0]) == my_key) and (self.personal_data['username'] != "generationxcode")):
       keys = self.read_keys()
       self.public_key = PublicKey(keys["public_key"][0],keys["public_key"][1])
       self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
-      self.current_transactions = ["transactions"]
+      self.current_transactions = self.read_from_blockchain_latest()["transactions"]
       self.unspent_coins = self.read_unspent_coins()
+      self.blockchain_checking()
     else:
       self.chain = []
       print("hey")
@@ -65,19 +74,19 @@ class Blockchain():
     self.ping_all_peers()
     self.blockchain_checking()
   def mine(self):
-    if self.read_from_blockchain_latest()['nonce'] == None:
+    if self.read_from_blockchain_latest()['nonce'] == "None":
       mined = False
       prev_hash = self.read_from_blockchain_latest()['prev_hash']
       counter = random.randint(1,1*10^5)
       while mined == False:
-        self.mine_stat =True
+        self.mine_stat = True
         if self.escape == False:
           hash_made = self.hash_txt(prev_hash+str(counter))
           if hash_made[:self.difficulty] == self.generate_zero_string(self.difficulty):
-            self.chain[-1]["nonce"] = counter
             block_to_write = self.read_from_blockchain_latest()
             block_to_write['nonce'] = counter
-            block_to_write['transactions'] = self.current_transactions
+            if self.current_transactions !=[]:
+              block_to_write['transactions'] = self.current_transactions
             self.write_to_blockchain_index(block_to_write,block_to_write['index'])
             self.new_block_mined()
             print("nonce found! mining successful!")
@@ -87,7 +96,7 @@ class Blockchain():
           print("mine with nonce "+str(counter)+" unsuccessful")
         else:
           self.mine_stat=False
-          self.escape = True
+          self.escape = False
           break
     else:
       self.mine_stat =False
@@ -98,18 +107,22 @@ class Blockchain():
   def new_block_mined(self):
     if Block_chain.objects.latest('pub_date').nonce != "None":
       latest_block = Block_chain.objects.latest('pub_date')
+      print('here')
       if self.check_single_block(self.read_from_blockchain_latest()):
+        print('passed')
         self.current_transactions = []
-        self.current_transactions = self.first_transaction_in_block()
-        blocc = {"index":int(latest_block.id)+1, "prev_hash":self.hash_txt(json.dumps(self.read_from_blockchain_latest())),"timestamp":time.time(),"transactions":self.current_transactions,"nonce":"None"}
+        self.current_transactions = self.first_transaction_in_block(self.read_from_blockchain_latest())
+        blocc = {"index":int(latest_block.index)+1, "prev_hash":self.hash_txt(json.dumps(self.read_from_blockchain_latest())),"timestamp":time.time(),"transactions":self.current_transactions,"nonce":"None"}
         #logic here for broadcasting the block around the network
         if not(self.broadcast_block_mined(blocc)):
+          print('no')
           self.current_transactions= self.current_transactions[0]
           self.mine_stat = False
           return False
         else:
+          print('ye')
           self.log_transactions(self.read_from_blockchain_latest())
-          self.current_transactions = []
+          self.write_to_blockchain(blocc)
           self.mine_stat = False
           return True
       else:
@@ -119,22 +132,21 @@ class Blockchain():
 
 
   def new_block_recieved(self,proof_recieved,transactions_recieved,time_stamp,transactions_gifted):
+    self.chain = [self.read_from_blockchain_latest()]
     self.chain[-1]["nonce"] = proof_recieved
     self.chain[-1]["transactions"] = transactions_recieved
-    self.current_transactions = []
+    self.current_transactions = [transactions_gifted]
     check = self.check_single_block(self.chain[-1])
     if check:
-      self.chain.append({
-        "index":len(self.chain)+1,
+      self.write_to_blockchain_index(self.chain[-1],self.chain[-1]['index'])
+      self.write_to_blockchain({
+        "index":int(self.read_latest_block()['index']+1),
         "prev_hash":self.calculate_transaction_hash(self.chain[-1]),
-        "nonce":None,
+        "nonce":"None",
         "timestamp":time_stamp,
-        "transactions":transactions_gifted
+        "transactions":self.current_transactions
       })
-      self.write_blockchain()
-      #self.log_transactions(block)
-      self.write_owned_coins()
-      self.write_unspent_coins()
+      self.blockchain_checking()
       #self.log_transactions(block)
       self.mine_stat = False
     else:
@@ -146,6 +158,7 @@ class Blockchain():
     if self.check_singular_transaction(transaction):
       print("yes")
       self.current_transactions.append(transaction)
+      self.chain = [self.read_from_blockchain_latest()]
       self.chain[-1]["transaction"] = self.current_transactions
       self.write_blockchain()
       return True
@@ -159,6 +172,7 @@ class Blockchain():
     ` inputs - {"hash","amount","signature","public key"}`
     * someone fix this code and make it more efficient and les klunky"""
     if (amount-int(amount)) == 0:
+      keys = self.read_keys()['public_key'][0]
       reciever_public_key = self.pythonify_public_key(reciever_public_key)
       balance = 0
       coins_to_use = []
@@ -189,19 +203,19 @@ class Blockchain():
         outputs[0]["signature"] = str(self.signature_making(outputs[0]["hash"], self.private_key))
         #self.coins.pop(last_index)
       """
+      print(str(reciever_public_key))
+      print(self.hash_txt((str(i["hash"])+str(keys))))
       for i in coins_to_use:
         outputs.append({
           "owner_public_key":self.jsonify_public_key(reciever_public_key),
           "amount":i["amount"],
-          "hash":self.hash_txt(i["hash"]+str(reciever_public_key)),
-          "signature": str(self.signature_making(self.hash_txt(i["hash"]+str(reciever_public_key)), self.private_key))
+          "hash":self.hash_txt((str(i["hash"])+str(keys))),
+          "signature": str(self.signature_making(str(i["hash"]), self.private_key))
         })
       self.current_transactions.append({
         "inputs":coins_to_use,
         "outputs":outputs
       })
-      self.chain[-1]["transactions"] = self.current_transactions
-      
       # the coins db and the unspent coins DB will be updated once the next block is mined
       """
       for i,v in enumerate(coins_to_use):
@@ -248,18 +262,17 @@ class Blockchain():
         outputs.append({
           "owner_public_key":self.jsonify_public_key(self.public_key),
           "amount":1,
-          "hash":self.hash_txt("".join([str(len(self.chain)),str(1),str(i),str(self.public_key)])),
+          "hash":self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i),str(self.public_key)])),
           "signature":"egg"#rsa.encrypt(self.hash_txt(str(len(self.chain)+1)).encode('utf8'), self.private_key)
         })
-      self.broadcast_transaction({"inputs":inputs,"outputs":outputs})
-      return {"inputs":inputs,"outputs":outputs}
+      return [{"inputs":inputs,"outputs":outputs}]
 
       """
       for i in outputs:
         self.coins.append(i)
       """
-  @staticmethod
-  def hash_txt(text):
+
+  def hash_txt(self,text):
     m = hashlib.sha256()
     m.update(text.encode("ascii"))
     return m.hexdigest()
@@ -267,7 +280,7 @@ class Blockchain():
 
   @staticmethod
   def signature_making(text,key):
-    return rsa.encrypt(text.encode("utf8"), key)
+    return str(rsa.encrypt(text.encode("utf8"), key))
   
 
   def broadcast_transaction(self,transaction):
@@ -289,15 +302,20 @@ class Blockchain():
     for i in self.peers:
       if not(i == "http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co"):
         try:
-          response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(self.chain[-2])}).text
+          prev_block = self.read_from_blockchain_latest()
+          response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(prev_block)}).text
+          print(response+" "+i)
           if response == "true":
             true_tally+=1
           elif response=="false":
             false_tally+=1
         except:
+          traceback.print_exc()
           print("peer "+i+" is offline or has an incorrect address")
     #play function. a dummy function until i set up the API
     print("Block broadcasted. Lets hope it gets accepted!")
+    print(true_tally)
+    print(false_tally)
     if (true_tally+false_tally) == 0:
       print("true")
       return True
@@ -322,8 +340,6 @@ class Blockchain():
   def check_single_block(self,block):
     if self.hash_txt(block["prev_hash"]+str(block["nonce"]))[:self.difficulty] != self.generate_zero_string(self.difficulty):
         return False
-    else:
-      return False
       
     return True
 
@@ -358,15 +374,34 @@ class Blockchain():
   def log_transactions(self,block):
     #assume all transactions are checked
     pub_key = self.jsonify_public_key(self.public_key)
-    for v in block['transactions']["inputs"]:
-        self.remove_from_unspent_coins(v['hash'])
-        if self.jsonify_public_key(v['owner_public_key']) == pub_key:
-          self.remove_from_owned_coins(v['hash'])
-    for v in block['transactions']["outputs"]:
-        self.write_to_unspent_coins(v)
-        if self.jsonify_public_key(v['owner_public_key']) == pub_key:
-          self.write_to_owned_coins(v)
-  
+    try:
+      try:
+        for i in block['transactions']:
+          for v in i["inputs"]:
+            try:
+              self.remove_from_unspent_coins(v['hash'])
+              if self.jsonify_public_key(v['owner_public_key']) == pub_key:
+                self.remove_from_owned_coins(v['hash'])
+            except:
+              pass
+          for v in i["outputs"]:
+              self.write_to_unspent_coins(v)
+              if (self.jsonify_public_key(v['owner_public_key']) == pub_key) and not(self.read_from_owned_coins_check(v['hash'])):
+                self.write_to_owned_coins(v)
+      except:
+        for v in block['transactions']["inputs"]:
+          try:
+            self.remove_from_unspent_coins(v['hash'])
+            if self.jsonify_public_key(v['owner_public_key']) == pub_key:
+              self.remove_from_owned_coins(v['hash'])
+          except:
+            print('coin not found. Do not worry.')
+        for v in block['transactions']["outputs"]:
+          self.write_to_unspent_coins(v)
+          if (self.jsonify_public_key(v['owner_public_key']) == pub_key) and not(self.read_from_owned_coins_check(v['hash'])):
+            self.write_to_owned_coins(v)
+    except:
+      print("error lollol")
   
   def log_all_blockchain_transactions(self,chain):
     for i in chain:
@@ -478,7 +513,7 @@ class Blockchain():
     try:
       self.read_peers()
       chains_obj = []
-      highest = Block_chain.objects.all().count()
+      highest = int(self.read_from_blockchain_latest()['index'])
       peer = None
       for i in self.peers:
         if i != ("http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co"):
@@ -489,21 +524,28 @@ class Blockchain():
               peer = i
               is_in = False
           except:
-            self.peers.remove(i)
-            print("die lol")
+            if i != "http://Eggcoin.generationxcode.repl.co":
+              self.peers.remove(i)
+              print("(die lol)The address "+i+" is wrong or offline. It has been removed from peers.")
+      if highest == int(self.read_from_blockchain_latest()['index']):
+        return True
+      print(highest)
+      print(self.read_from_blockchain_latest()['index'])
       if peer !=  None:
-        last_block_own = self.read_from_blockchain_latest()
-        block = json.loads(requests.post(peer+"/block_num",{"index":int(last_block_own['index'])}).text)
-        if last_block_own['nonce'] == block['nonce']:
-          for i in range(int(last_block_own['index']),highest+1):
-            try:
-              block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)
-              self.log_transactions(block)
-              self.write_to_blockchain(block)
-              print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
-            except:
-              print("Error, blockchain is corrupted, please stop and restart the repl.")
-        else:
+        try:
+          last_block_own = self.read_from_blockchain(int(self.read_from_blockchain_latest()['index'])-1)
+          block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
+          if int(last_block_own['nonce']) == block['nonce']:
+            for i in range(int(last_block_own['index'])+2,highest+1):
+              self.synchronizing = True
+              try:
+                block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)
+                self.log_transactions(block)
+                self.write_to_blockchain(block)
+                print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
+              except:
+                print("Error, blockchain is corrupted, please stop and restart the repl.")
+        except:
           Block_chain.objects.all().delete()
           print("blockchain deleted, new blockchain synchronising")
           for i in range(1,highest+1):
@@ -521,13 +563,21 @@ class Blockchain():
         if i != ("http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co"):
           try:
             foreign_chain_len = int(requests.get(i+"/chain_length").text)
-            if foreign_chain_len > highest:
+            if self.read_from_blockchain_latest()['index'] > highest:
+              print(highest)
+              print(foreign_chain_len)
               self.blockchain_checking()
+            else:
+              self.synchronizing = False
           except:
-            self.peers.remove(i)
-            print("die lol")
+            if i != "http://Eggcoin.generationxcode.repl.co":
+              self.peers.remove(i)
+              self.synchronizing = False
+              pass
+      
           
     except:
+      self.synchronizing = False
       print("die")
 
 
@@ -539,10 +589,11 @@ class Blockchain():
           for v in peers:
             self.write_new_peer(v)
       except:
-        self.peers.remove(i)
-        with open("peers.json", "w") as outfile:
-          json.dump(self.peers, outfile)
-        print("lol2")
+        if i !="http://Eggcoin.generationxcode.repl.co":
+          self.peers.remove(i)
+          with open("peers.json", "w") as outfile:
+            json.dump(self.peers, outfile)
+          pass
 
   # not going to use this - just a showcase of how stupid I am
   def balance_everything(self,chain):
@@ -567,18 +618,21 @@ class Blockchain():
 
   def read_from_blockchain_latest(self):
     block = Block_chain.objects.latest('pub_date')
-    return {'transactions':json.loads(block.transactions),'index':index,'timestamp':int(block.timestamp),'prev_hash':block.previous_hash,'nonce':block.nonce}
+    return {'transactions':json.loads(block.transactions),'index':block.index,'timestamp':float(block.timestamp),'prev_hash':block.previous_hash,'nonce':block.nonce}
 
 
   def read_from_blockchain(self,index):
     block = Block_chain.objects.get(index=str(index))
-    return {'transactions':json.loads(block.transactions),'index':index,'timestamp':int(block.timestamp),'prev_hash':block.previous_hash,'nonce':block.nonce}
+    return {'transactions':json.loads(block.transactions),'index':index,'timestamp':float(block.timestamp),'prev_hash':block.previous_hash,'nonce':block.nonce}
 
 
   def write_to_blockchain(self, block):
-    Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
-    return True
-  
+    try:
+      Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      return True
+    except:
+      Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      return True
 
   def write_to_blockchain_index(self,block,index):
     block_write = Block_chain.objects.get(index=str(index))
@@ -627,6 +681,16 @@ class Blockchain():
   def remove_from_owned_coins(self, hash):
     owned_coins.objects.get(hash=hash).remove()
     return True
+
+
+  def read_from_owned_coins_check(self,hash):
+    try:
+      coin = owned_coins.objects.get(hash=str(hash))
+      if coin:
+        return True
+      return False
+    except:
+      return False
 
 
 eggchain = Blockchain()
