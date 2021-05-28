@@ -101,6 +101,7 @@ class Blockchain():
     else:
       self.mine_stat =False
       self.nonce=0
+      print("yo")
       self.new_block_mined()
     
       
@@ -306,8 +307,10 @@ class Blockchain():
           response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(prev_block)}).text
           if response == "true":
             true_tally+=1
+            print(i+" support me")
           elif response=="false":
             false_tally+=1
+            print(i+" dont support me :(")
         except:
           traceback.print_exc()
           print("peer "+i+" is offline or has an incorrect address")
@@ -577,6 +580,7 @@ class Blockchain():
       
           
     except:
+      traceback.print_exc()
       self.synchronizing = False
       print("die")
 
@@ -630,10 +634,15 @@ class Blockchain():
     try:
       if Block_chain.objects.get(index=str(block['index'])):
         Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+        print("more than index :)")
       else:
-        return False
+        Block_chain(index=str(block['index']+1),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+        print("done")
       return True
     except:
+      traceback.print_exc()
+      Block_chain(index=str(block['index']+1),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      print("done")
       return False
 
   def write_to_blockchain_index(self,block,index):
