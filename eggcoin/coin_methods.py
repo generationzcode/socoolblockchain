@@ -16,6 +16,7 @@ from django.utils import timezone
 class Blockchain():
 
   def __init__(self):
+    self.blocked_peers = []
     self.synchronizing = False
     self.write_new_peer("http://Eggcoin.generationxcode.repl.co")
     self.escape = False
@@ -73,6 +74,8 @@ class Blockchain():
     self.read_peers()
     self.ping_all_peers()
     self.blockchain_checking()
+
+
   def mine(self):
     if self.read_from_blockchain_latest()['nonce'] == "None":
       mined = False
@@ -117,7 +120,7 @@ class Blockchain():
         #logic here for broadcasting the block around the network
         if not(self.broadcast_block_mined(blocc)):
           print('no')
-          self.current_transactions= self.current_transactions[0]
+          self.current_transactions = self.current_transactions[0]
           self.mine_stat = False
           return False
         else:
@@ -519,7 +522,7 @@ class Blockchain():
       highest = int(self.read_from_blockchain_latest()['index'])
       peer = None
       for i in self.peers:
-        if i != ("http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co"):
+        if (i != ("http://"+self.personal_data['repl_name']+"."+self.personal_data['username']+".repl.co")) and not(i in self.blocked_peers):
           try:
             foreign_chain_len = int(requests.get(i+"/chain_length").text)
             if foreign_chain_len > highest:
@@ -543,8 +546,12 @@ class Blockchain():
               self.synchronizing = True
               try:
                 block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)
-                self.log_transactions(block)
-                self.write_to_blockchain(block)
+                if self.check_single_block(block):
+                  self.log_transactions(block)
+                  self.write_to_blockchain(block)
+                else:
+                  self.blocked_peers.append(peer)
+                  return False
                 print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
               except:
                 print("Error, blockchain is corrupted, please stop and restart the repl.")
@@ -702,7 +709,6 @@ class Blockchain():
       return False
     except:
       return False
-
 
 eggchain = Blockchain()
 
