@@ -73,7 +73,6 @@ def new_block(request):
     if block == True:
       print("yes")
       eggchain.escape =True
-      eggchain.blockchain_checking()
       return HttpResponse("true")
     else:
       print("no")

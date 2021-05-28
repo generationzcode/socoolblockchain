@@ -140,7 +140,7 @@ class Blockchain():
     if check:
       self.write_to_blockchain_index(self.chain[-1],self.chain[-1]['index'])
       self.write_to_blockchain({
-        "index":int(self.read_latest_block()['index']+1),
+        "index":int(self.read_from_blockchain_latest()['index']+1),
         "prev_hash":self.calculate_transaction_hash(self.chain[-1]),
         "nonce":"None",
         "timestamp":time_stamp,
@@ -304,7 +304,6 @@ class Blockchain():
         try:
           prev_block = self.read_from_blockchain_latest()
           response = requests.post(i+"/new_block",{"block":json.dumps(block),"prevblock":json.dumps(prev_block)}).text
-          print(response+" "+i)
           if response == "true":
             true_tally+=1
           elif response=="false":
@@ -628,11 +627,13 @@ class Blockchain():
 
   def write_to_blockchain(self, block):
     try:
-      Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      if Block_chain.objects.get(index=str(block['index'])):
+        Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      else:
+        return False
       return True
     except:
-      Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
-      return True
+      return False
 
   def write_to_blockchain_index(self,block,index):
     block_write = Block_chain.objects.get(index=str(index))
