@@ -68,6 +68,7 @@ def new_transaction(request):
 
 
 def new_block(request):
+  eggchain.sychronizing = True
   if eggchain.synchronizing == False:
     block = eggchain.new_block_recieved(json.loads(request.POST['prevblock'])['nonce'],json.loads(request.POST['prevblock'])['transactions'],json.loads(request.POST['block'])['timestamp'],json.loads(request.POST['block'])['transactions'])
     if block == True:

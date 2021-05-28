@@ -140,7 +140,7 @@ class Blockchain():
     if check:
       self.write_to_blockchain_index(self.chain[-1],self.chain[-1]['index'])
       self.write_to_blockchain({
-        "index":int(self.read_from_blockchain_latest()['index']+1),
+        "index":int(self.read_from_blockchain_latest()['index'])+1,
         "prev_hash":self.calculate_transaction_hash(self.chain[-1]),
         "nonce":"None",
         "timestamp":time_stamp,
@@ -337,9 +337,10 @@ class Blockchain():
     return string
   
   def check_single_block(self,block):
+    print(self.difficulty)
+    print(self.hash_txt(block["prev_hash"]+str(block["nonce"])))
     if self.hash_txt(block["prev_hash"]+str(block["nonce"]))[:self.difficulty] != self.generate_zero_string(self.difficulty):
         return False
-      
     return True
 
 
