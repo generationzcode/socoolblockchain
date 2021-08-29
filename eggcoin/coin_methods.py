@@ -25,7 +25,7 @@ class Blockchain():
     self.read_personal_data()
     self.current_transactions = []
     self.nonce=0
-    my_key = 140388580907465133105915434450383793485035986871045024199643410432339156186579924298083425595522266259072335465721683558239322246445355757776569418174479148327499466879142197016031265888167897049284395859778857155905614260161061241649905878412678823961156997654382749170224692738793588409591092859914764702383
+    my_key = 141638327098651051980236429566531385139887513213877681331588249666693161925951061679621171978404467963828545972024841729403600006316066852371527668330175115063986907527750636637196595355563540447655703193861061836141036750095102975578100977696695297067762021117228189080021077654700047788128382635627673436583
     keys = self.read_keys()
     self.public_key = PublicKey(keys["public_key"][0],keys["public_key"][1])
     self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
@@ -114,7 +114,6 @@ class Blockchain():
       print('here')
       if self.check_single_block(self.read_from_blockchain_latest()):
         print('passed')
-        self.current_transactions = []
         self.current_transactions = self.first_transaction_in_block(self.read_from_blockchain_latest())
         blocc = {"index":int(latest_block.index)+1, "prev_hash":self.hash_txt(json.dumps(self.read_from_blockchain_latest())),"timestamp":time.time(),"transactions":self.current_transactions,"nonce":"None"}
         #logic here for broadcasting the block around the network
@@ -135,21 +134,13 @@ class Blockchain():
         return False
 
 
-  def new_block_recieved(self,proof_recieved,transactions_recieved,time_stamp,transactions_gifted):
-    self.chain = [self.read_from_blockchain_latest()]
-    self.chain[-1]["nonce"] = proof_recieved
-    self.chain[-1]["transactions"] = transactions_recieved
-    self.current_transactions = [transactions_gifted]
+  def new_block_recieved(self,prev_blocck,new_blocck):
+    self.chain = [prev_blocck]
+    self.current_transactions = new_block['transactions']
     check = self.check_single_block(self.chain[-1])
     if check:
       self.write_to_blockchain_index(self.chain[-1],self.chain[-1]['index'])
-      self.write_to_blockchain({
-        "index":int(self.read_from_blockchain_latest()['index'])+1,
-        "prev_hash":self.calculate_transaction_hash(self.chain[-1]),
-        "nonce":"None",
-        "timestamp":time_stamp,
-        "transactions":self.current_transactions
-      })
+      self.write_to_blockchain(new_blocck)
       self.blockchain_checking()
       #self.log_transactions(block)
       self.mine_stat = False
@@ -161,6 +152,7 @@ class Blockchain():
   def add_recieved_transaction(self, transaction):
     if self.check_singular_transaction(transaction):
       print("yes")
+      self.current_transactions = [self.current_transactions]
       self.current_transactions.append(transaction)
       self.chain = [self.read_from_blockchain_latest()]
       self.chain[-1]["transaction"] = self.current_transactions
@@ -186,6 +178,7 @@ class Blockchain():
       for v,i in enumerate(self.coins):
         balance+=int(i["amount"])
         i["owner_public_key"] = self.jsonify_public_key(self.public_key)
+        i['hash'] = str(i['hash'])
         coins_to_use.append(i)
         if amount<=balance:
           last_index=v
@@ -213,7 +206,7 @@ class Blockchain():
         outputs.append({
           "owner_public_key":self.jsonify_public_key(reciever_public_key),
           "amount":i["amount"],
-          "hash":self.hash_txt((str(i["hash"])+str(keys))),
+          "hash":str(self.hash_txt((str(i["hash"])+str(keys)))),
           "signature": str(self.signature_making(str(i["hash"]), self.private_key))
         })
       self.current_transactions.append({
@@ -253,20 +246,19 @@ class Blockchain():
 
 
   def first_transaction_in_block(self,block):
-    if len(self.current_transactions) == 0:
       inputs = []
       outputs = []
       for i in range(50):
         inputs.append({
           "owner_public_key":"egg",
           "amount":1,
-          "hash":self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i)])),
+          "hash":str(self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i)]))),
           "signature":"egg"
         })
         outputs.append({
           "owner_public_key":self.jsonify_public_key(self.public_key),
           "amount":1,
-          "hash":self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i),str(self.public_key)])),
+          "hash":str(self.hash_txt("".join([str(Block_chain.objects.all().count()),str(1),str(i),str(self.public_key)]))),
           "signature":"egg"#rsa.encrypt(self.hash_txt(str(len(self.chain)+1)).encode('utf8'), self.private_key)
         })
       return [{"inputs":inputs,"outputs":outputs}]
@@ -284,7 +276,12 @@ class Blockchain():
 
   @staticmethod
   def signature_making(text,key):
-    return str(rsa.encrypt(text.encode("utf8"), key))
+    data =  rsa.encrypt(text.encode("utf8"), key)
+    output = 0    
+    size = len(data)
+    for index in range(size):
+        output |= data[index] << (8 * (size - 1 - index))
+    return str(output)
   
 
   def broadcast_transaction(self,transaction):
@@ -381,7 +378,12 @@ class Blockchain():
     #assume all transactions are checked
     pub_key = self.jsonify_public_key(self.public_key)
     try:
+      block['transactions'] = json.loads(block['transactions'])
+    except:
+      block['transactions']=block['transactions']
+    try:
       try:
+        print(block['transactions'])
         for i in block['transactions']:
           for v in i["inputs"]:
             try:
@@ -407,6 +409,7 @@ class Blockchain():
           if (self.jsonify_public_key(v['owner_public_key']) == pub_key) and not(self.read_from_owned_coins_check(v['hash'])):
             self.write_to_owned_coins(v)
     except:
+      traceback.print_exc()
       print("error lollol")
   
   def log_all_blockchain_transactions(self,chain):
@@ -517,6 +520,11 @@ class Blockchain():
 
   def blockchain_checking(self):
     try:
+      if self.read_from_blockchain_latest()['nonce'] != "None":
+        self.current_transactions = self.first_transaction_in_block(self.read_from_blockchain_latest())
+        blocc = {"index":int(self.read_from_blockchain_latest()['index'])+1, "prev_hash":self.hash_txt(json.dumps(self.read_from_blockchain_latest())),"timestamp":time.time(),"transactions":self.current_transactions,"nonce":"None"}
+        self.write_to_blockchain(blocc)
+        print("completed correcting blockchain latest block to allow user to mine")
       self.read_peers()
       chains_obj = []
       highest = int(self.read_from_blockchain_latest()['index'])
@@ -554,9 +562,11 @@ class Blockchain():
                   return False
                 print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
               except:
-                print("Error, blockchain is corrupted, please stop and restart the repl.")
+                print("Error, blockchain is corrupted, this is alright")
         except:
           Block_chain.objects.all().delete()
+          owned_coins.objects.all().delete()
+          unspent_coins.objects.all().delete()
           print("blockchain deleted, new blockchain synchronising")
           for i in range(1,highest+1):
             try:
@@ -565,6 +575,7 @@ class Blockchain():
               self.write_to_blockchain(block)
               print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
             except:
+              traceback.print_exc()
               print("Error, blockchain is corrupted, please stop and restart the repl or let it continue. Contact generationxcode about this error if it persists.")
       highest = Block_chain.objects.all().count()
       blockchain_count = Block_chain.objects.all().count()
@@ -643,12 +654,11 @@ class Blockchain():
         Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
         print("more than index :)")
       else:
-        Block_chain(index=str(block['index']+1),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+        Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
         print("done")
       return True
     except:
-      traceback.print_exc()
-      Block_chain(index=str(block['index']+1),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
+      Block_chain(index=str(block['index']),timestamp=str(block['timestamp']),previous_hash=block['prev_hash'],nonce=str(block['nonce']),transactions=json.dumps(block['transactions']),pub_date=timezone.now()).save()
       print("done")
       return False
 
