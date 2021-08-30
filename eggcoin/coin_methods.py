@@ -552,7 +552,7 @@ class Blockchain():
             block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
 
             if int(last_block_own['nonce']) == block['nonce']:
-              for i in range(int(last_block_own['index'])+2,highest+1):
+              for i in range(int(last_block_own['index'])+1,highest+1):
                 self.synchronizing = True
                 try:
                   block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)

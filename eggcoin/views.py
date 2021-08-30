@@ -106,7 +106,11 @@ def get_block(request):
   try:
     number = int(request.POST['index'])
     block = Block_chain.objects.get(index=str(number))
-    return HttpResponse(json.dumps({"index":block.index,"prev_hash":block.previous_hash,"nonce":int(block.nonce),"timestamp":block.timestamp,"transactions":json.loads(block.transactions)}))
+    try:
+      returnthis=json.dumps({"index":block.index,"prev_hash":block.previous_hash,"nonce":int(block.nonce),"timestamp":block.timestamp,"transactions":json.loads(block.transactions)})
+    except:
+      returnthis = json.dumps({"index":block.index,"prev_hash":block.previous_hash,"nonce":block.nonce,"timestamp":block.timestamp,"transactions":json.loads(block.transactions)})
+    return HttpResponse(returnthis)
   except:
     traceback.print_exc()
     return HttpResponse("false")
