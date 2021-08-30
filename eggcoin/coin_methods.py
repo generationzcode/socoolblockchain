@@ -385,17 +385,18 @@ class Blockchain():
     try:
       try:
         for i in block['transactions']:
-          for v in i["inputs"]:
-            try:
-              self.remove_from_unspent_coins(v['hash'])
-              if self.jsonify_public_key(v['owner_public_key']) == pub_key:
-                self.remove_from_owned_coins(v['hash'])
-            except:
-              pass
-          for v in i["outputs"]:
-              self.write_to_unspent_coins(v)
-              if (self.jsonify_public_key(v['owner_public_key']) == pub_key) and not(self.read_from_owned_coins_check(v['hash'])):
-                self.write_to_owned_coins(v)
+          for m in i:
+            for v in m["inputs"]:
+              try:
+                self.remove_from_unspent_coins(v['hash'])
+                if self.jsonify_public_key(v['owner_public_key']) == pub_key:
+                  self.remove_from_owned_coins(v['hash'])
+              except:
+                pass
+            for v in i["outputs"]:
+                self.write_to_unspent_coins(v)
+                if (self.jsonify_public_key(v['owner_public_key']) == pub_key) and not(self.read_from_owned_coins_check(v['hash'])):
+                  self.write_to_owned_coins(v)
       except:
         for v in block['transactions']["inputs"]:
           try:
