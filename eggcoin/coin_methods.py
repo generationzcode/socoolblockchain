@@ -29,7 +29,7 @@ class Blockchain():
     keys = self.read_keys()
     self.public_key = PublicKey(keys["public_key"][0],keys["public_key"][1])
     self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
-    if (Block_chain.objects.all().count()>0) or ((int(keys['public_key'][0]) == my_key) and (self.personal_data['username'] != "generationxcode")):
+    if (Block_chain.objects.all().count()>0) and (((int(keys['public_key'][0]) == my_key) and (self.personal_data['username'] == "generationxcode") and (self.personal_data['repl_name']=="Eggcoin")) or ((int(keys['public_key'][0]) != my_key))):
       keys = self.read_keys()
       self.public_key = PublicKey(keys["public_key"][0],keys["public_key"][1])
       self.private_key = PrivateKey(keys["private_key"][0],keys["private_key"][1],keys["private_key"][2],keys["private_key"][3],keys["private_key"][4])
@@ -136,7 +136,7 @@ class Blockchain():
 
   def new_block_recieved(self,prev_blocck,new_blocck):
     self.chain = [prev_blocck]
-    self.current_transactions = new_block['transactions']
+    self.current_transactions = new_blocck['transactions']
     check = self.check_single_block(self.chain[-1])
     if check:
       self.write_to_blockchain_index(self.chain[-1],self.chain[-1]['index'])
@@ -343,7 +343,8 @@ class Blockchain():
     print(self.difficulty)
     print(self.hash_txt(block["prev_hash"]+str(block["nonce"])))
     if self.hash_txt(block["prev_hash"]+str(block["nonce"]))[:self.difficulty] != self.generate_zero_string(self.difficulty):
-        return False
+      print("chain is fed u[p")
+      return False
     return True
 
 
@@ -383,7 +384,6 @@ class Blockchain():
       block['transactions']=block['transactions']
     try:
       try:
-        print(block['transactions'])
         for i in block['transactions']:
           for v in i["inputs"]:
             try:
@@ -547,22 +547,37 @@ class Blockchain():
       print(self.read_from_blockchain_latest()['index'])
       if peer !=  None:
         try:
-          last_block_own = self.read_from_blockchain(int(self.read_from_blockchain_latest()['index'])-1)
-          block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
-          if int(last_block_own['nonce']) == block['nonce']:
-            for i in range(int(last_block_own['index'])+2,highest+1):
-              self.synchronizing = True
+          if Block_chain.objects.all().count() > 0 :
+            last_block_own = self.read_from_blockchain(int(self.read_from_blockchain_latest()['index'])-1)
+            block = json.loads(requests.post(peer+"/block_num",{"index":last_block_own['index']}).text)
+
+            if int(last_block_own['nonce']) == block['nonce']:
+              for i in range(int(last_block_own['index'])+2,highest+1):
+                self.synchronizing = True
+                try:
+                  block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)
+                  if self.check_single_block(block):
+                    self.log_transactions(block)
+                    self.write_to_blockchain(block)
+                  else:
+                    self.blocked_peers.append(peer)
+                    return False
+                  print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
+                except:
+                  print("Error, blockchain is corrupted, this is alright")
+          else:
+            Block_chain.objects.all().delete()
+            owned_coins.objects.all().delete()
+            unspent_coins.objects.all().delete()
+            print("blockchain deleted, new blockchain synchronising")
+            for i in range(1,highest+1):
               try:
                 block = json.loads(requests.post(peer+"/block_num",{"index":i}).text)
-                if self.check_single_block(block):
-                  self.log_transactions(block)
-                  self.write_to_blockchain(block)
-                else:
-                  self.blocked_peers.append(peer)
-                  return False
+                self.log_transactions(block)
+                self.write_to_blockchain(block)
                 print("> block number "+str(i)+ " synchronised out of "+str(highest)+" number of blocks.")
               except:
-                print("Error, blockchain is corrupted, this is alright")
+                print("Error, blockchain is corrupted, please stop and restart the repl or let it continue. Contact generationxcode about this error if it persists.")
         except:
           Block_chain.objects.all().delete()
           owned_coins.objects.all().delete()
